@@ -1,7 +1,7 @@
 # TODO: Change the name of the org 
 org: nightowl1998
-app: serverless-app-tungvs6
-service: serverless-app-tungvs6
+app: capstone-tungvs6
+service: capstone-tungvs6
 
 plugins:
   - serverless-webpack
@@ -25,9 +25,9 @@ provider:
   # Use these variables in the functions and resouorces section below. For example, 
   # ${self:provider.environment.ATTACHMENT_S3_BUCKET}
   environment:
-    TODOS_TABLE: Todos-${self:provider.stage}
+    TODOS_TABLE: capstone-tungvs6-db-${self:provider.stage}
     TODOS_CREATED_AT_INDEX: CreatedAtIndex
-    ATTACHMENT_S3_BUCKET: serverless-tungvs6-${self:provider.stage}
+    ATTACHMENT_S3_BUCKET: capstone-tungvs6-bucket-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 3000
 
   logs:
