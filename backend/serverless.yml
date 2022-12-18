@@ -201,6 +201,31 @@ resources:
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
+    
+    BudgetTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: balance
+            AttributeType: N
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: balance
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:provider.environment.BUDGET_TABLE}
+        LocalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.ITEM_CREATED_AT_INDEX}
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+              - AttributeName: balance
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
 
     AttachmentsBucket:
       Type: AWS::S3::Bucket
