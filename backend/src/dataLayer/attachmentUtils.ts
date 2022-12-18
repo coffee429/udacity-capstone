@@ -10,11 +10,11 @@ const s3 = new XAWS.S3({
 export class AttachmentUtils {
     constructor() { };
     
-    getSignedS3Url(id: string, bucket: string): string {
+    getSignedS3Url(itemId: string, bucket: string): string {
         const urlExpiration = parseInt(process.env.SIGNED_URL_EXPIRATION, 10);
         const signedUrl = s3.getSignedUrl('putObject', {
             Bucket: bucket,
-            Key: id,
+            Key: itemId,
             Expires: urlExpiration
         });
         return signedUrl;

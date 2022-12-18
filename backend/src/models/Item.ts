@@ -1,6 +1,6 @@
 export interface Item {
   userId: string
-  id: string
+  itemId: string
   createdAt: string
   name: string
   dueDate: string

@@ -16,7 +16,7 @@ export class ItemAccess {
     ) { }
 
     async createItem(newItem: Item): Promise<Item> {
-        logger.info(`Create new item: ${newItem.id}`);
+        logger.info(`Create new item: ${newItem.itemId}`);
         await this.docClient
             .put({
                 TableName: this.itemTable,
@@ -40,13 +40,13 @@ export class ItemAccess {
         return result.Items as Item[];
     }
 
-    async updateItem(userId: string, id: string, updateData: ItemUpdate): Promise<void> {
-        logger.info(`Updating itemId: ${id}`);
+    async updateItem(userId: string, itemId: string, updateData: ItemUpdate): Promise<void> {
+        logger.info(`Updating itemId: ${itemId}`);
         await this.docClient
             .update({
                 TableName: this.itemTable,
-                Key: { userId, id },
-                ConditionExpression: 'attribute_exists(id)',
+                Key: { userId, itemId },
+                ConditionExpression: 'attribute_exists(itemId)',
                 UpdateExpression: 'set #content = :n, dueDate = :due, done = :dn',
                 ExpressionAttributeValues: {
                     ':n': updateData.name,
@@ -60,26 +60,26 @@ export class ItemAccess {
             .promise();
     }
 
-    async deleteItem(userId: string, id: string): Promise<void> {
-        logger.info(`Deleting item id: ${id}`);
+    async deleteItem(userId: string, itemId: string): Promise<void> {
+        logger.info(`Deleting item id: ${itemId}`);
         await this.docClient
             .delete({
                 TableName: this.itemTable,
-                Key: { userId, id }
+                Key: { userId, itemId }
             })
             .promise();
     }
 
-    async setAttachmentUrl(userId: string, id: string, image_bucket: string): Promise<void> {
-        logger.info(`Updating attachmentUrl for item: ${id}`);
+    async setAttachmentUrl(userId: string, itemId: string, image_bucket: string): Promise<void> {
+        logger.info(`Updating attachmentUrl for item: ${itemId}`);
         await this.docClient
             .update({
                 TableName: this.itemTable,
-                Key: { userId, id },
-                ConditionExpression: 'attribute_exists(id)',
+                Key: { userId, itemId },
+                ConditionExpression: 'attribute_exists(itemId)',
                 UpdateExpression: 'set attachmentUrl = :attachmentUrl',
                 ExpressionAttributeValues: {
-                    ':attachmentUrl': `https://${image_bucket}.s3.amazonaws.com/${id}`
+                    ':attachmentUrl': `https://${image_bucket}.s3.amazonaws.com/${itemId}`
                 }
             })
             .promise();

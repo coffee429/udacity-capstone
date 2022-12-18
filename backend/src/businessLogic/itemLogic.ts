@@ -8,10 +8,10 @@ import * as uuid from 'uuid'
 const itemAccess = new ItemAccess();
 const attachmentUtils = new AttachmentUtils();
 export async function createItem(userId: string, newItemRequest: CreateItemRequest) {
-    const id = uuid.v4();
+    const itemId = uuid.v4();
     const done = false;
     const createdAt = new Date().toISOString();
-    const newItem: Item = { id, userId, createdAt, done, ...newItemRequest };
+    const newItem: Item = { itemId, userId, createdAt, done, ...newItemRequest };
     return itemAccess.createItem(newItem);
 }
 

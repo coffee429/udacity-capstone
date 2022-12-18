@@ -12,10 +12,10 @@ const logger = createLogger('generateUploadUrl')
 
 export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    const id = event.pathParameters.id
+    const itemId = event.pathParameters.itemId
     const userId: string = getUserId(event);
     try {
-      const signedUrl: string = await createAttachmentPresignedUrl(userId, id);
+      const signedUrl: string = await createAttachmentPresignedUrl(userId, itemId);
       logger.info('S3 Signed URL created');
       return {
         statusCode: 201,
