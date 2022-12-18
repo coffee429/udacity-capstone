@@ -1,7 +1,7 @@
 {
-  "name": "serverless-todo-app",
+  "name": "shopping-cart-udacity",
   "version": "1.0.0",
-  "description": "Serverless TODO image app",
+  "description": "shopping cart udacity",
   "dependencies": {
     "@types/axios": "^0.14.0",
     "@types/http-errors": "^1.6.1",

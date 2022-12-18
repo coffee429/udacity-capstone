@@ -4,24 +4,23 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import * as middy from 'middy'
 import { cors } from 'middy/middlewares'
 
-import { getTodosForUser as getTodosForUser } from '../../businessLogic/todos'
+import { getItemForUser } from '../../businessLogic/itemLogic'
 import { getUserId } from '../utils';
 import { createLogger } from '../../utils/logger'
-import { TodoItem } from '../../models/TodoItem'
+import { Item } from '../../models/Item'
 
-const logger = createLogger('getTodos')
+const logger = createLogger('getUserId')
 
-// TODO: Get all TODO items for a current user
 export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const userId: string = getUserId(event);
 
     try {
-      const todos: TodoItem[] = await getTodosForUser(userId);
-      logger.info('TodoList retrieved');
+      const item: Item[] = await getItemForUser(userId);
+      logger.info('item list retrieved');
       return {
         statusCode: 200,
-        body: JSON.stringify({ todos })
+        body: JSON.stringify({ item })
       };
     } catch (error) {
       logger.error(`Error: ${error.message}`);
