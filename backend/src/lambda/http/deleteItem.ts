@@ -10,11 +10,11 @@ import { createLogger } from '../../utils/logger'
 const logger = createLogger('deleteItem')
 export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    const id = event.pathParameters.id
+    const itemId = event.pathParameters.itemId
     const userId: string = getUserId(event);
     try {
-      await deleteItem(userId, id);
-      logger.info(`Deleted item id: ${id}`);
+      await deleteItem(userId, itemId);
+      logger.info(`Deleted item id: ${itemId}`);
       return {
         statusCode: 204,
         body: undefined

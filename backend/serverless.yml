@@ -1,6 +1,6 @@
 org: nightowl1998
-app: shopping-cart-udacity-tungvs6
-service: shopping-cart-udacity-tungvs6
+app: shopping-cart
+service: shopping-cart
 
 plugins:
   - serverless-webpack
@@ -22,10 +22,10 @@ provider:
     apiGateway: true
 
   environment:
-    ITEM_TABLE: item-${self:provider.stage}
-    BUDGET_TABLE: budget-${self:provider.stage}
+    ITEM_TABLE: item-db-${self:provider.stage}
+    BUDGET_TABLE: budget-db-${self:provider.stage}
     ITEM_CREATED_AT_INDEX: CreatedAtIndex
-    ATTACHMENT_S3_BUCKET: item-s3-${self:provider.stage}
+    ATTACHMENT_S3_BUCKET: item-bucket-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 3000
 
   logs:
@@ -97,7 +97,7 @@ functions:
     events:
       - http:
           method: patch
-          path: item/{id}
+          path: item/{itemId}
           cors: true
           authorizer: Auth
           request:
@@ -121,7 +121,7 @@ functions:
     events:
       - http:
           method: delete
-          path: item/{id}
+          path: item/{itemId}
           cors: true
           authorizer: Auth
     iamRoleStatements:
@@ -142,7 +142,7 @@ functions:
     events:
       - http:
           method: post
-          path: item/{id}/attachment
+          path: item/{itemId}/attachment
           cors: true
           authorizer: Auth
     iamRoleStatements:
@@ -181,14 +181,14 @@ resources:
         AttributeDefinitions:
           - AttributeName: userId
             AttributeType: S
-          - AttributeName: id
+          - AttributeName: itemId
             AttributeType: S
           - AttributeName: createdAt
             AttributeType: S
         KeySchema:
           - AttributeName: userId
             KeyType: HASH
-          - AttributeName: id
+          - AttributeName: itemId
             KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.ITEM_TABLE}
@@ -201,34 +201,6 @@ resources:
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
-    
-    BudgetTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        AttributeDefinitions:
-          - AttributeName: userId
-            AttributeType: S
-          - AttributeName: id
-            AttributeType: S
-          - AttributeName: createdAt
-            AttributeType: S
-        KeySchema:
-          - AttributeName: userId
-            KeyType: HASH
-          - AttributeName: id
-            KeyType: RANGE
-        BillingMode: PAY_PER_REQUEST
-        TableName: ${self:provider.environment.BUDGET_TABLE}
-        LocalSecondaryIndexes:
-          - IndexName: ${self:provider.environment.ITEM_CREATED_AT_INDEX}
-            KeySchema:
-              - AttributeName: userId
-                KeyType: HASH
-              - AttributeName: createdAt
-                KeyType: RANGE
-            Projection:
-              ProjectionType: ALL
-
 
     AttachmentsBucket:
       Type: AWS::S3::Bucket
