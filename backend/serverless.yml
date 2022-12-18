@@ -1,7 +1,6 @@
-# TODO: Change the name of the org 
 org: nightowl1998
-app: capstone-tungvs6
-service: capstone-tungvs6
+app: shopping-cart-udacity-tungvs6
+service: shopping-cart-udacity-tungvs6
 
 plugins:
   - serverless-webpack
@@ -22,12 +21,11 @@ provider:
     lambda: true
     apiGateway: true
 
-  # Use these variables in the functions and resouorces section below. For example, 
-  # ${self:provider.environment.ATTACHMENT_S3_BUCKET}
   environment:
-    TODOS_TABLE: capstone-tungvs6-db-${self:provider.stage}
-    TODOS_CREATED_AT_INDEX: CreatedAtIndex
-    ATTACHMENT_S3_BUCKET: capstone-tungvs6-bucket-${self:provider.stage}
+    ITEM_TABLE: item-${self:provider.stage}
+    BUDGET_TABLE: budget-${self:provider.stage}
+    ITEM_CREATED_AT_INDEX: CreatedAtIndex
+    ATTACHMENT_S3_BUCKET: item-s3-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 3000
 
   logs:
@@ -49,48 +47,43 @@ functions:
   Auth:
     handler: src/lambda/auth/auth0Authorizer.handler
 
-  # TODO: Configure this function - 
-  # Provide iamRoleStatements property for performing Actions on DynamoDB
-  GetTodos:
-    handler: src/lambda/http/getTodos.handler
+  GetItem:
+    handler: src/lambda/http/getItem.handler
     events:
       - http:
           method: get
-          path: todos
+          path: item
           cors: true
           authorizer: Auth
     iamRoleStatements:
       - Effect: Allow
         Action:
           - dynamodb:Query
-        Resource: !GetAtt TodosTable.Arn
+        Resource: !GetAtt ItemTable.Arn
       - Effect: Allow
         Action:
           - xray:PutTraceSegments
           - xray:PutTelemetryRecords
         Resource:
           - "*"
+  
 
-  # TODO: Configure this function - 
-  # Provide iamRoleStatements property. Decide the Actions and AWS Resource. 
-  # To refer to an AWS resource defined in the "Resources" section, you can use "Resource: !GetAtt <resource-name>.Arn"
-  # To validate incoming HTTP requests, we have provided the request schemas in function definition below. 
-  CreateTodo:
-    handler: src/lambda/http/createTodo.handler
+  CreateItem:
+    handler: src/lambda/http/createItem.handler
     events:
       - http:
           method: post
-          path: todos
+          path: item
           cors: true
           authorizer: Auth
           request:
             schemas:
-              application/json: ${file(models/create-todo-model.json)}
+              application/json: ${file(models/create-item-model.json)}
     iamRoleStatements:
       - Effect: Allow
         Action:
           - dynamodb:PutItem
-        Resource: !GetAtt TodosTable.Arn
+        Resource: !GetAtt ItemTable.Arn
       - Effect: Allow
         Action:
           - xray:PutTraceSegments
@@ -98,24 +91,23 @@ functions:
         Resource:
           - "*"
 
-  # TODO: Configure this function
-  # Provide property for setting up CORS, Authorizer, iamRoleStatements, and request schemas
-  UpdateTodo:
-    handler: src/lambda/http/updateTodo.handler
+
+  UpdateItem:
+    handler: src/lambda/http/updateItem.handler
     events:
       - http:
           method: patch
-          path: todos/{todoId}
+          path: item/{id}
           cors: true
           authorizer: Auth
           request:
             schemas:
-              application/json: ${file(models/update-todo-model.json)}
+              application/json: ${file(models/update-item-model.json)}
     iamRoleStatements:
       - Effect: Allow
         Action:
           - dynamodb:UpdateItem
-        Resource: !GetAtt TodosTable.Arn
+        Resource: !GetAtt ItemTable.Arn
       - Effect: Allow
         Action:
           - xray:PutTraceSegments
@@ -123,21 +115,20 @@ functions:
         Resource:
           - "*"
 
-  # TODO: Configure this function
-  # Provide property for setting up CORS, Authorizer, iamRoleStatements
-  DeleteTodo:
-    handler: src/lambda/http/deleteTodo.handler
+
+  DeleteItem:
+    handler: src/lambda/http/deleteItem.handler
     events:
       - http:
           method: delete
-          path: todos/{todoId}
+          path: item/{id}
           cors: true
           authorizer: Auth
     iamRoleStatements:
       - Effect: Allow
         Action:
           - dynamodb:DeleteItem
-        Resource: !GetAtt TodosTable.Arn
+        Resource: !GetAtt ItemTable.Arn
       - Effect: Allow
         Action:
           - xray:PutTraceSegments
@@ -145,21 +136,20 @@ functions:
         Resource:
           - "*"
 
-  # TODO: Configure this function
-  # Provide property for setting up CORS, Authorizer, iamRoleStatements
+
   GenerateUploadUrl:
     handler: src/lambda/http/generateUploadUrl.handler
     events:
       - http:
           method: post
-          path: todos/{todoId}/attachment
+          path: item/{id}/attachment
           cors: true
           authorizer: Auth
     iamRoleStatements:
       - Effect: Allow
         Action:
           - dynamodb:UpdateItem
-        Resource: !GetAtt TodosTable.Arn
+        Resource: !GetAtt ItemTable.Arn
       - Effect: Allow
         Action:
           - s3:PutObject
@@ -174,9 +164,6 @@ functions:
 
 resources:
   Resources:
-    # Add necessary AWS resources. You will need at least the following AWS resources
-    # TODO: Fill the properties
-    # Feel free to change the names as you like. 
     GatewayResponseDefault4XX:
       Type: AWS::ApiGateway::GatewayResponse
       Properties:
@@ -188,26 +175,52 @@ resources:
         RestApiId:
           Ref: ApiGatewayRestApi
     
-    # TODO: Create a DynamoDB table with local secondary index and a composite key
-    TodosTable:
+    ItemTable:
       Type: AWS::DynamoDB::Table
       Properties:
         AttributeDefinitions:
           - AttributeName: userId
             AttributeType: S
-          - AttributeName: todoId
+          - AttributeName: id
             AttributeType: S
           - AttributeName: createdAt
             AttributeType: S
         KeySchema:
           - AttributeName: userId
             KeyType: HASH
-          - AttributeName: todoId
+          - AttributeName: id
             KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
-        TableName: ${self:provider.environment.TODOS_TABLE}
+        TableName: ${self:provider.environment.ITEM_TABLE}
         LocalSecondaryIndexes:
-          - IndexName: ${self:provider.environment.TODOS_CREATED_AT_INDEX}
+          - IndexName: ${self:provider.environment.ITEM_CREATED_AT_INDEX}
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+    
+    BudgetTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: id
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:provider.environment.BUDGET_TABLE}
+        LocalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.ITEM_CREATED_AT_INDEX}
             KeySchema:
               - AttributeName: userId
                 KeyType: HASH
@@ -216,8 +229,7 @@ resources:
             Projection:
               ProjectionType: ALL
 
-    # TODO: Complete the bucket properties below. 
-    # Do not forget to add the CorsConfiguration propoerty
+
     AttachmentsBucket:
       Type: AWS::S3::Bucket
       Properties:
@@ -236,13 +248,12 @@ resources:
                 - HEAD
               MaxAge: 6000
 
-    # TODO: Complete the policy below and attach it to the bucket defined above
-    # For cross referencing the name of the bucket, use "!Ref AttachmentsBucket"
+
     BucketPolicy:
       Type: AWS::S3::BucketPolicy
       Properties:
         PolicyDocument:
-          Id: ToDoTungVS6
+          Id: ItemBucket
           Version: "2012-10-17"
           Statement:
             - Sid: PublicReadForGetBucketObjects
