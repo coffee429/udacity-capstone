@@ -2,11 +2,11 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import 'source-map-support/register'
 import * as middy from 'middy'
 import { cors } from 'middy/middlewares'
-import { CreateItemRequest } from '../../requests/CreateItemRequest'
-import { getUserId } from '../utils';
-import { createItem } from '../../businessLogic/itemLogic'
-import { Item } from '../../models/Item'
-import { createLogger } from '../../utils/logger'
+import { CreateItemRequest } from '../../../requests/CreateItemRequest'
+import { getUserId } from '../../utils';
+import { createItem } from '../../../businessLogic/itemLogic'
+import { Item } from '../../../models/Item'
+import { createLogger } from '../../../utils/logger'
 
 const logger = createLogger('createItem')
 

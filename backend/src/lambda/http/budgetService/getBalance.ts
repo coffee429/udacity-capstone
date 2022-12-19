@@ -4,10 +4,9 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import * as middy from 'middy'
 import { cors } from 'middy/middlewares'
 
-import { getItemForUser } from '../../businessLogic/itemLogic'
-import { getUserId } from '../utils';
-import { createLogger } from '../../utils/logger'
-import { Item } from '../../models/Item'
+import { getBalance } from '../../../businessLogic/budgetLogic'
+import { getUserId } from '../../utils';
+import { createLogger } from '../../../utils/logger'
 
 const logger = createLogger('getUserId')
 
@@ -16,11 +15,11 @@ export const handler = middy(
     const userId: string = getUserId(event);
 
     try {
-      const item: Item[] = await getItemForUser(userId);
-      logger.info('item list retrieved');
+      const balance: number = await getBalance(userId);
+      logger.info(`Balance: ${balance}`);
       return {
         statusCode: 200,
-        body: JSON.stringify({ item })
+        body: JSON.stringify({ balance })
       };
     } catch (error) {
       logger.error(`Error: ${error.message}`);
