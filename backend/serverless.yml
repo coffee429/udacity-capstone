@@ -48,7 +48,7 @@ functions:
     handler: src/lambda/auth/auth0Authorizer.handler
 
   GetItem:
-    handler: src/lambda/http/getItem.handler
+    handler: src/lambda/http/itemService/getItem.handler
     events:
       - http:
           method: get
@@ -67,9 +67,8 @@ functions:
         Resource:
           - "*"
   
-
   CreateItem:
-    handler: src/lambda/http/createItem.handler
+    handler: src/lambda/http/itemService/createItem.handler
     events:
       - http:
           method: post
@@ -93,7 +92,7 @@ functions:
 
 
   UpdateItem:
-    handler: src/lambda/http/updateItem.handler
+    handler: src/lambda/http/itemService/updateItem.handler
     events:
       - http:
           method: patch
@@ -117,7 +116,7 @@ functions:
 
 
   DeleteItem:
-    handler: src/lambda/http/deleteItem.handler
+    handler: src/lambda/http/itemService/deleteItem.handler
     events:
       - http:
           method: delete
@@ -138,7 +137,7 @@ functions:
 
 
   GenerateUploadUrl:
-    handler: src/lambda/http/generateUploadUrl.handler
+    handler: src/lambda/http/itemService/generateUploadUrl.handler
     events:
       - http:
           method: post
@@ -155,6 +154,26 @@ functions:
           - s3:PutObject
           - s3:GetObject
         Resource: !GetAtt AttachmentsBucket.Arn
+      - Effect: Allow
+        Action:
+          - xray:PutTraceSegments
+          - xray:PutTelemetryRecords
+        Resource:
+          - "*"
+  
+  GetBalance:
+    handler: src/lambda/http/budgetService/getBalance.handler
+    events:
+      - http:
+          method: get
+          path: balance
+          cors: true
+          authorizer: Auth
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: !GetAtt BudgetTable.Arn
       - Effect: Allow
         Action:
           - xray:PutTraceSegments
