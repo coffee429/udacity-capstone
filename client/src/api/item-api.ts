@@ -71,3 +71,16 @@ export async function getUploadUrl(
 export async function uploadFile(uploadUrl: string, file: Buffer): Promise<void> {
   await Axios.put(uploadUrl, file)
 }
+
+export async function getBalance(idToken: string): Promise<number> {
+  console.log('Fetching balance')
+
+  const response = await Axios.get(`${apiEndpoint}/balance`, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${idToken}`
+    },
+  })
+  console.log('Balance:', response.data.balance)
+  return response.data.balance
+}

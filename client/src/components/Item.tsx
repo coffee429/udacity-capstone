@@ -14,7 +14,7 @@ import {
   Loader
 } from 'semantic-ui-react'
 
-import { createItem, deleteItem, getItem, patchItem } from '../api/item-api'
+import { createItem, deleteItem, getItem, patchItem, getBalance } from '../api/item-api'
 import Auth from '../auth/Auth'
 import { Item } from '../types/Item'
 
@@ -27,13 +27,15 @@ interface ItemsState {
   items: Item[]
   newItemName: string
   loadingItems: boolean
+  balance: number
 }
 
 export class Items extends React.PureComponent<ItemsProps, ItemsState> {
   state: ItemsState = {
     items: [],
     newItemName: '',
-    loadingItems: true
+    loadingItems: true,
+    balance: 0
   }
 
   handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -101,11 +103,15 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
     }
   }
 
+  
   render() {
+    var balance = getBalance(this.props.auth.getIdToken())
     return (
       <div>
         <Header as="h1">MY SHOPPING CART</Header>
-
+        <p style={{
+          fontSize : 15,
+        }}>{`Balance : ${balance}`}</p>
         {this.renderCreateItemInput()}
 
         {this.renderItems()}
@@ -155,6 +161,7 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
       </Grid.Row>
     )
   }
+
 
   renderItemsList() {
     return (
