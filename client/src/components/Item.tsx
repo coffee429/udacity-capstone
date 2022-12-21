@@ -14,7 +14,7 @@ import {
   Loader
 } from 'semantic-ui-react'
 
-import { createItem, deleteItem, getItem, patchItem, getBalance } from '../api/item-api'
+import { createItem, deleteItem, getItem, patchItem, getBalance, updateBalance } from '../api/item-api'
 import Auth from '../auth/Auth'
 import { Item } from '../types/Item'
 
@@ -105,15 +105,19 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
 
   
   render() {
-    var balance = getBalance(this.props.auth.getIdToken())
+    getBalance(this.props.auth.getIdToken()).then((data) => {
+      this.setState({
+        balance: data
+      })
+    })
     return (
       <div>
         <Header as="h1">MY SHOPPING CART</Header>
         <p style={{
           fontSize : 15,
-        }}>{`Balance : ${balance}`}</p>
+          background : "red"
+        }}>{`Balance : ${this.state.balance}`}</p>
         {this.renderCreateItemInput()}
-
         {this.renderItems()}
       </div>
     )
@@ -217,5 +221,30 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
     date.setDate(date.getDate() + 7)
 
     return dateFormat(date, 'yyyy-mm-dd') as string
+  }
+
+  renderAddBalance() {
+    return (
+      <Grid.Row>
+        <Grid.Column width={16}>
+          <Input
+            action={{
+              color: 'teal',
+              labelPosition: 'left',
+              icon: 'add',
+              content: 'Add balance',
+              onClick: this.onItemCreate
+            }}
+            fluid
+            actionPosition="left"
+            placeholder="Item"
+            onChange={this.handleNameChange}
+          />
+        </Grid.Column>
+        <Grid.Column width={16}>
+          <Divider />
+        </Grid.Column>
+      </Grid.Row>
+    )
   }
 }

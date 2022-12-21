@@ -23,7 +23,7 @@ provider:
 
   environment:
     ITEM_TABLE: item-db-${self:provider.stage}
-    BUDGET_TABLE: budget-db-${self:provider.stage}
+    BUDGET_TABLE: budget-db2-${self:provider.stage}
     ITEM_CREATED_AT_INDEX: CreatedAtIndex
     ATTACHMENT_S3_BUCKET: item-bucket-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 3000
@@ -181,6 +181,30 @@ functions:
         Resource:
           - "*"
 
+  UpdateBalance:
+    handler: src/lambda/http/budgetService/updateBalance.handler
+    events:
+      - http:
+          method: patch
+          path: balance
+          cors: true
+          authorizer: Auth
+          request:
+            schemas:
+              application/json: ${file(models/update-balance-model.json)}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:UpdateItem
+        Resource: !GetAtt BudgetTable.Arn
+      - Effect: Allow
+        Action:
+          - xray:PutTraceSegments
+          - xray:PutTelemetryRecords
+        Resource:
+          - "*"
+
 resources:
   Resources:
     GatewayResponseDefault4XX:
@@ -228,7 +252,7 @@ resources:
           - AttributeName: userId
             AttributeType: S
           - AttributeName: balance
-            AttributeType: N
+            AttributeType: S
         KeySchema:
           - AttributeName: userId
             KeyType: HASH

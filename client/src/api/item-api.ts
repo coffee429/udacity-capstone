@@ -84,3 +84,16 @@ export async function getBalance(idToken: string): Promise<number> {
   console.log('Balance:', response.data.balance)
   return response.data.balance
 }
+
+export async function updateBalance(idToken: string): Promise<number> {
+  console.log('Fetching balance')
+
+  const response = await Axios.get(`${apiEndpoint}/balance`, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${idToken}`
+    },
+  })
+  console.log('Balance:', response.data.balance)
+  return response.data.balance
+}
