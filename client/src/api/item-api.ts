@@ -74,15 +74,15 @@ export async function uploadFile(uploadUrl: string, file: Buffer): Promise<void>
 
 export async function getBalance(idToken: string): Promise<number> {
   console.log('Fetching balance')
-
-  const response = await Axios.get(`${apiEndpoint}/balance`, {
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${idToken}`
-    },
-  })
-  console.log('Balance:', response.data.balance)
-  return response.data.balance
+    const response = await Axios.get(`${apiEndpoint}/balance`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${idToken}`
+      },
+    })
+    console.log('Balance:', response.data.balance)
+    return response.data.balance
+  
 }
 
 export async function updateBalance(idToken: string): Promise<number> {
@@ -96,4 +96,16 @@ export async function updateBalance(idToken: string): Promise<number> {
   })
   console.log('Balance:', response.data.balance)
   return response.data.balance
+}
+
+export async function createBudget(idToken: string): Promise<void> {
+  console.log('Add new budget for new user')
+
+  const response = await Axios.post(`${apiEndpoint}/budget`, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${idToken}`
+    },
+  })
+  console.log('New budget added')
 }

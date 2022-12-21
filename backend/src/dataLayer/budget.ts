@@ -69,4 +69,15 @@ export class BudgetAccess {
         }
     }
 
+    async createBudget(newBudget: Budget): Promise<Budget> {
+        logger.info(`Create new budget for user ${newBudget.userId}`);
+        await this.docClient
+            .put({
+                TableName: this.budgetTable,
+                Item: newBudget
+            })
+            .promise();
+        return newBudget;
+    }
+
 }
