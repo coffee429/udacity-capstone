@@ -26,7 +26,8 @@ export class BudgetAccess {
                 }
             })
             .promise();
-        return (result.Items as Budget[])[0].balance
+        if(result!=null) return (result.Items as Budget[])[0].balance
+        else return null      
     }
 
     async updateBalance(userId: string, req: UpdateBalanceRequest) {

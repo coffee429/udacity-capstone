@@ -86,7 +86,7 @@ export async function getBalance(idToken: string): Promise<number> {
 }
 
 export async function updateBalance(idToken: string): Promise<number> {
-  console.log('Fetching balance')
+  console.log('Creating balance')
 
   const response = await Axios.get(`${apiEndpoint}/balance`, {
     headers: {
@@ -101,7 +101,7 @@ export async function updateBalance(idToken: string): Promise<number> {
 export async function createBudget(idToken: string): Promise<void> {
   console.log('Add new budget for new user')
 
-  const response = await Axios.post(`${apiEndpoint}/budget`, {
+  await Axios.post(`${apiEndpoint}/budget`, null, {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${idToken}`

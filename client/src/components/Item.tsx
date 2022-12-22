@@ -14,7 +14,7 @@ import {
   Loader
 } from 'semantic-ui-react'
 
-import { createItem, deleteItem, getItem, patchItem, getBalance, updateBalance } from '../api/item-api'
+import { createItem, deleteItem, getItem, patchItem, getBalance, updateBalance, createBudget } from '../api/item-api'
 import Auth from '../auth/Auth'
 import { Item } from '../types/Item'
 
@@ -27,6 +27,7 @@ interface ItemsState {
   items: Item[]
   newItemName: string
   loadingItems: boolean
+  budgetCreated: boolean
   balance: number
 }
 
@@ -35,9 +36,17 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
     items: [],
     newItemName: '',
     loadingItems: true,
+    budgetCreated: false,
     balance: 0
-  }
 
+  }
+  
+
+  // constructor(props : ItemsProps) {
+  //   super(props);
+  //   this.onBudgetCreate = this.onBudgetCreate.bind(this);
+  // }
+  
   handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({ newItemName: event.target.value })
   }
@@ -61,6 +70,8 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
       alert('Item creation failed')
     }
   }
+
+  
 
   onItemDelete = async (itemId: string) => {
     try {
@@ -103,23 +114,77 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
     }
   }
 
+  onBudgetCreate = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    try {
+      await createBudget(this.props.auth.getIdToken())
+      this.setState({
+        budgetCreated: true
+      })
+    } catch {
+      alert('Budget creation failed')
+    }
+  }
+
+  onBudgetContinue = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    try {
+      this.setState({
+        budgetCreated: true
+      })
+    } catch {
+      alert('Unexpected error')
+    }
+  }
   
   render() {
-    getBalance(this.props.auth.getIdToken()).then((data) => {
-      this.setState({
-        balance: data
+    if(this.state.budgetCreated) {
+      getBalance(this.props.auth.getIdToken()).then((data) => {
+        this.setState({
+          balance: data
+        })
       })
-    })
+      return (
+        <div>
+          <Header as="h1">MY SHOPPING CART</Header>
+          {this.renderGetBalance()}
+          {this.renderCreateItemInput()}
+          {this.renderItems()}
+        </div>
+      ) 
+    }
+    else
+      return (
+        <div>
+          <Header as="h1">MY SHOPPING CART</Header>
+          {this.renderCreateBudget()}
+          {this.renderContinue()}
+        </div>
+      )
+  }
+
+  renderGetBalance() {
     return (
-      <div>
-        <Header as="h1">MY SHOPPING CART</Header>
-        <p style={{
-          fontSize : 15,
-          background : "red"
-        }}>{`Balance : ${this.state.balance}`}</p>
-        {this.renderCreateItemInput()}
-        {this.renderItems()}
-      </div>
+      <p style={{
+        fontSize : 15,
+        background : "red"
+      }}>{`Balance : ${this.state.balance}`}</p>
+    )
+  }
+
+  renderCreateBudget() {
+    return (
+      <Button 
+        onClick={this.onBudgetCreate}>
+        First time shopping? Create new budget here
+      </Button>
+    )
+  }
+
+  renderContinue() {
+    return (
+      <Button 
+        onClick={this.onBudgetContinue}>
+        Already got budget? Let's shopping
+      </Button>
     )
   }
 
@@ -148,6 +213,22 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
     )
   }
 
+  // renderContinue() {
+  //   return (
+  //     <Button>
+  //         <Input
+  //           action={{
+  //             color: 'red',
+  //             icon: 'add',
+  //             content: 'Add new budget',
+  //             onClick: this.onBudgetCreate
+  //           }}
+  //         />
+  //     </Button>
+  //   )
+  // }
+
+  
   renderItems() {
     if (this.state.loadingItems) {
       return this.renderLoading()
@@ -223,28 +304,5 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
     return dateFormat(date, 'yyyy-mm-dd') as string
   }
 
-  renderAddBalance() {
-    return (
-      <Grid.Row>
-        <Grid.Column width={16}>
-          <Input
-            action={{
-              color: 'teal',
-              labelPosition: 'left',
-              icon: 'add',
-              content: 'Add balance',
-              onClick: this.onItemCreate
-            }}
-            fluid
-            actionPosition="left"
-            placeholder="Item"
-            onChange={this.handleNameChange}
-          />
-        </Grid.Column>
-        <Grid.Column width={16}>
-          <Divider />
-        </Grid.Column>
-      </Grid.Row>
-    )
-  }
+
 }
