@@ -4,8 +4,8 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import * as middy from 'middy'
 import { cors, httpErrorHandler } from 'middy/middlewares'
 
-import { updateItem } from '../../../businessLogic/itemLogic'
-import { UpdateItemRequest } from '../../../requests/UpdateItemRequest'
+import { updateBalance } from '../../../businessLogic/budgetLogic'
+import { UpdateBalanceRequest } from '../../../requests/UpdateBalanceRequest'
 import { getUserId } from '../../utils'
 import { createLogger } from '../../../utils/logger'
 
@@ -13,12 +13,11 @@ const logger = createLogger('getUserId')
 
 export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    const itemId = event.pathParameters.itemId
-    const updateItemRequest: UpdateItemRequest = JSON.parse(event.body)
+    const updateBalanceRequest: UpdateBalanceRequest = JSON.parse(event.body)
     const userId: string = getUserId(event);
     try {
-      await updateItem(userId, itemId, updateItemRequest);
-      logger.info(`Successfully updated the item: ${itemId}`);
+      await updateBalance(userId, updateBalanceRequest);
+      logger.info("Debug here")
       return {
         statusCode: 204,
         body: undefined

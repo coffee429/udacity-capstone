@@ -23,7 +23,7 @@ provider:
 
   environment:
     ITEM_TABLE: item-db-${self:provider.stage}
-    BUDGET_TABLE: budget-db-${self:provider.stage}
+    BUDGET_TABLE: budget-db3-${self:provider.stage}
     ITEM_CREATED_AT_INDEX: CreatedAtIndex
     ATTACHMENT_S3_BUCKET: item-bucket-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 3000
@@ -161,6 +161,26 @@ functions:
         Resource:
           - "*"
   
+  CreateBudget:
+    handler: src/lambda/http/budgetService/createBudget.handler
+    events:
+      - http:
+          method: post
+          path: budget
+          cors: true
+          authorizer: Auth
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: !GetAtt BudgetTable.Arn
+      - Effect: Allow
+        Action:
+          - xray:PutTraceSegments
+          - xray:PutTelemetryRecords
+        Resource:
+          - "*"
+
   GetBalance:
     handler: src/lambda/http/budgetService/getBalance.handler
     events:
@@ -172,7 +192,32 @@ functions:
     iamRoleStatements:
       - Effect: Allow
         Action:
+          - dynamodb:PutItem
           - dynamodb:Query
+        Resource: !GetAtt BudgetTable.Arn
+      - Effect: Allow
+        Action:
+          - xray:PutTraceSegments
+          - xray:PutTelemetryRecords
+        Resource:
+          - "*"
+
+  UpdateBalance:
+    handler: src/lambda/http/budgetService/updateBalance.handler
+    events:
+      - http:
+          method: patch
+          path: balance
+          cors: true
+          authorizer: Auth
+          request:
+            schemas:
+              application/json: ${file(models/update-balance-model.json)}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:UpdateItem
         Resource: !GetAtt BudgetTable.Arn
       - Effect: Allow
         Action:
@@ -227,12 +272,14 @@ resources:
         AttributeDefinitions:
           - AttributeName: userId
             AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: S
           - AttributeName: balance
             AttributeType: N
         KeySchema:
           - AttributeName: userId
             KeyType: HASH
-          - AttributeName: balance
+          - AttributeName: createdAt
             KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.BUDGET_TABLE}
