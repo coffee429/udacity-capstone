@@ -14,7 +14,7 @@ import {
   Loader
 } from 'semantic-ui-react'
 
-import { createItem, deleteItem, getItem, patchItem, getBalance, updateBalance, createBudget } from '../api/item-api'
+import { createItem, deleteItem, getItem, patchItem, getBalance, createBudget } from '../api/item-api'
 import Auth from '../auth/Auth'
 import { Item } from '../types/Item'
 
@@ -42,10 +42,10 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
   }
   
 
-  // constructor(props : ItemsProps) {
-  //   super(props);
-  //   this.onBudgetCreate = this.onBudgetCreate.bind(this);
-  // }
+  constructor(props : ItemsProps) {
+    super(props);
+    this.onBudgetCreate = this.onBudgetCreate.bind(this);
+  }
   
   handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({ newItemName: event.target.value })
@@ -147,6 +147,7 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
           <Header as="h1">MY SHOPPING CART</Header>
           {this.renderGetBalance()}
           {this.renderCreateItemInput()}
+          {this.renderAddBalanceButton()}
           {this.renderItems()}
         </div>
       ) 
@@ -188,6 +189,16 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
     )
   }
 
+  renderAddBalanceButton() {
+    return (
+      <Button 
+        icon = "Add"
+        onClick={this.onBudgetContinue}>
+        Add
+      </Button>
+    )
+  }
+
   renderCreateItemInput() {
     return (
       <Grid.Row>
@@ -213,22 +224,6 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
     )
   }
 
-  // renderContinue() {
-  //   return (
-  //     <Button>
-  //         <Input
-  //           action={{
-  //             color: 'red',
-  //             icon: 'add',
-  //             content: 'Add new budget',
-  //             onClick: this.onBudgetCreate
-  //           }}
-  //         />
-  //     </Button>
-  //   )
-  // }
-
-  
   renderItems() {
     if (this.state.loadingItems) {
       return this.renderLoading()

@@ -1,5 +1,5 @@
 import { BudgetAccess } from '../dataLayer/budget'
-import { UpdateBalanceRequest } from '../requests/UpdateBalanceRequest';
+import { UpdateBudgetRequest } from '../requests/UpdateBudgetRequest';
 import { Budget } from '../models/Budget'
 const budgetAccess = new BudgetAccess();
 
@@ -10,10 +10,10 @@ export async function createBudget(userId: string) {
     return budgetAccess.createBudget(newBudget);
 }
 
-export async function getBalance(userId: string) : Promise<number>{
-    return budgetAccess.getBalance(userId)
+export async function getBudget(userId: string) : Promise<Budget[]>{
+    return budgetAccess.getBudget(userId)
 }
 
-export async function updateBalance(userId: string, req: UpdateBalanceRequest) :Promise<void>{
-    return budgetAccess.updateBalance(userId, req)
+export async function updateBudget(userId: string, req: UpdateBudgetRequest) :Promise<void>{
+    return budgetAccess.updateBudget(userId, req)
 }

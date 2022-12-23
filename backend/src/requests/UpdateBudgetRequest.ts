@@ -1,4 +1,4 @@
-export interface UpdateBalanceRequest {
+export interface UpdateBudgetRequest {
     method: string,
     amount: number
   }

@@ -1,6 +1,6 @@
 org: nightowl1998
-app: shopping-cart
-service: shopping-cart
+app: shopping-cart-v1
+service: shopping-cart-v1
 
 plugins:
   - serverless-webpack
@@ -23,7 +23,7 @@ provider:
 
   environment:
     ITEM_TABLE: item-db-${self:provider.stage}
-    BUDGET_TABLE: budget-db3-${self:provider.stage}
+    BUDGET_TABLE: budget-db4-${self:provider.stage}
     ITEM_CREATED_AT_INDEX: CreatedAtIndex
     ATTACHMENT_S3_BUCKET: item-bucket-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 3000
@@ -172,6 +172,7 @@ functions:
     iamRoleStatements:
       - Effect: Allow
         Action:
+          - dynamodb:Query
           - dynamodb:PutItem
         Resource: !GetAtt BudgetTable.Arn
       - Effect: Allow
@@ -181,12 +182,12 @@ functions:
         Resource:
           - "*"
 
-  GetBalance:
-    handler: src/lambda/http/budgetService/getBalance.handler
+  GetBudget:
+    handler: src/lambda/http/budgetService/getBudget.handler
     events:
       - http:
           method: get
-          path: balance
+          path: budget
           cors: true
           authorizer: Auth
     iamRoleStatements:
@@ -202,17 +203,17 @@ functions:
         Resource:
           - "*"
 
-  UpdateBalance:
-    handler: src/lambda/http/budgetService/updateBalance.handler
+  UpdateBudget:
+    handler: src/lambda/http/budgetService/updateBudget.handler
     events:
       - http:
           method: patch
-          path: balance
+          path: budget
           cors: true
           authorizer: Auth
           request:
             schemas:
-              application/json: ${file(models/update-balance-model.json)}
+              application/json: ${file(models/update-budget-model.json)}
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -272,26 +273,11 @@ resources:
         AttributeDefinitions:
           - AttributeName: userId
             AttributeType: S
-          - AttributeName: createdAt
-            AttributeType: S
-          - AttributeName: balance
-            AttributeType: N
         KeySchema:
           - AttributeName: userId
             KeyType: HASH
-          - AttributeName: createdAt
-            KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.BUDGET_TABLE}
-        LocalSecondaryIndexes:
-          - IndexName: ${self:provider.environment.ITEM_CREATED_AT_INDEX}
-            KeySchema:
-              - AttributeName: userId
-                KeyType: HASH
-              - AttributeName: balance
-                KeyType: RANGE
-            Projection:
-              ProjectionType: ALL
 
     AttachmentsBucket:
       Type: AWS::S3::Bucket
