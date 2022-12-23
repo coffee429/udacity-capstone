@@ -11,12 +11,14 @@ import {
   Icon,
   Input,
   Image,
+  Modal,
   Loader
 } from 'semantic-ui-react'
 
-import { createItem, deleteItem, getItem, patchItem, getBalance, createBudget } from '../api/item-api'
+import { createItem, deleteItem, getItem, patchItem, getBalance, createBudget, updateBudget } from '../api/item-api'
 import Auth from '../auth/Auth'
 import { Item } from '../types/Item'
+import { UpdateBudgetRequest } from '../types/UpdateBudgetRequest'
 
 interface ItemsProps {
   auth: Auth
@@ -29,6 +31,10 @@ interface ItemsState {
   loadingItems: boolean
   budgetCreated: boolean
   balance: number
+  open:boolean
+  pay: boolean
+  addNumber: number
+  totalPayment: number
 }
 
 export class Items extends React.PureComponent<ItemsProps, ItemsState> {
@@ -37,8 +43,11 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
     newItemName: '',
     loadingItems: true,
     budgetCreated: false,
-    balance: 0
-
+    balance: 0,
+    open:false,
+    pay: false,
+    addNumber: 0,
+    totalPayment: 0
   }
   
 
@@ -71,7 +80,75 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
     }
   }
 
-  
+  renderModalAdd = () =>{
+    console.log(this.state.open)
+    return (
+      <Modal
+        onClose={() => this.setState({open:false})}
+        onOpen={() => this.setState({open:true})}
+        open={this.state.open}
+      >
+        <Modal.Header>How much do you want to add?</Modal.Header>
+        <span> I will add: </span>
+        <input value={this.state.addNumber}
+        onChange={(event) => {
+          this.setState({addNumber:Number(event.target.value)})
+        }}
+        />
+        <Modal.Actions>
+          <Button color='black' onClick={() => this.setState({open:false})}>
+            Cancel
+          </Button>
+          <Button
+            content="Confirm"
+            labelPosition='right'
+            icon='checkmark'
+            onClick={() => {
+              // Update balance
+              var newBalance = this.state.balance + this.state.addNumber
+              this.setState({balance:newBalance})
+              this.setState({open:false})
+              this.onAddBalance(this.state.addNumber)
+            }}
+            positive
+          />
+        </Modal.Actions>
+      </Modal>
+    )
+  }
+
+  renderModalPay = () =>{
+    console.log(this.state.pay)
+    return (
+      <Modal
+        onClose={() => this.setState({pay:false})}
+        onOpen={() => this.setState({pay:true})}
+        open={this.state.pay}
+      >
+        <Modal.Header>Are you sure to buy these item?</Modal.Header>
+        <span> Total: ${this.state.totalPayment}</span>
+        <Modal.Actions>
+          <Button color='black' onClick={() => this.setState({pay:false})}>
+            Cancel
+          </Button>
+          <Button
+            content="Confirm"
+            labelPosition='right'
+            icon='checkmark'
+            onClick={() => {
+              // Update balance
+              var newBalance = this.state.balance + this.state.addNumber
+              this.setState({balance:newBalance})
+              this.setState({pay:false})
+              this.onAddBalance(this.state.addNumber)
+            }}
+          
+            positive
+          />
+        </Modal.Actions>
+      </Modal>
+    )
+  }
 
   onItemDelete = async (itemId: string) => {
     try {
@@ -102,6 +179,16 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
     }
   }
 
+  onAddBalance = async (amount: number) => {
+    try {
+      const method:string = "ADD"
+      const req : UpdateBudgetRequest = {method, amount}
+      await updateBudget(this.props.auth.getIdToken(), req)
+    } catch {
+      alert('Cannot add money to budget')
+    }
+  }
+
   async componentDidMount() {
     try {
       const items = await getItem(this.props.auth.getIdToken())
@@ -128,7 +215,7 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
   onBudgetContinue = async (event: React.MouseEvent<HTMLButtonElement>) => {
     try {
       this.setState({
-        budgetCreated: true
+        budgetCreated: true,
       })
     } catch {
       alert('Unexpected error')
@@ -136,6 +223,7 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
   }
   
   render() {
+    console.log(this.state.items)
     if(this.state.budgetCreated) {
       getBalance(this.props.auth.getIdToken()).then((data) => {
         this.setState({
@@ -147,8 +235,9 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
           <Header as="h1">MY SHOPPING CART</Header>
           {this.renderGetBalance()}
           {this.renderCreateItemInput()}
-          {this.renderAddBalanceButton()}
           {this.renderItems()}
+          {this.renderModalAdd()}
+          {this.renderModalPay()}
         </div>
       ) 
     }
@@ -166,8 +255,11 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
     return (
       <p style={{
         fontSize : 15,
-        background : "red"
-      }}>{`Balance : ${this.state.balance}`}</p>
+      }}>
+        <span style={{marginRight:15}}>{`Balance : ${this.state.balance}$`} </span>
+      {this.renderAddBalanceButton()}
+      {this.renderPayButton()}
+      </p>
     )
   }
 
@@ -192,9 +284,21 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
   renderAddBalanceButton() {
     return (
       <Button 
-        icon = "Add"
-        onClick={this.onBudgetContinue}>
+        onClick={()=>{
+          this.setState({open:true})
+        }}>
         Add
+      </Button>
+    )
+  }
+
+  renderPayButton() {
+    return (
+      <Button 
+        onClick={()=>{
+          this.setState({pay:true})
+        }}>
+        Pay
       </Button>
     )
   }
@@ -259,11 +363,11 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
                 {item.name}
               </Grid.Column>
               <Grid.Column width={3} floated="right">
-                {item.dueDate}
+                {item.price + "$"}
               </Grid.Column>
               <Grid.Column width={1} floated="right">
                 <Button
-                  icon
+                  
                   color="blue"
                   onClick={() => this.onEditButtonClick(item.itemId)}
                 >
@@ -272,7 +376,7 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
               </Grid.Column>
               <Grid.Column width={1} floated="right">
                 <Button
-                  icon
+                  
                   color="red"
                   onClick={() => this.onItemDelete(item.itemId)}
                 >

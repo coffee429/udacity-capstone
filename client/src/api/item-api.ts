@@ -3,6 +3,7 @@ import { Item } from '../types/Item';
 import { CreateItemRequest } from '../types/CreateItemRequest';
 import Axios from 'axios'
 import { UpdateItemRequest } from '../types/UpdateItemRequest';
+import { UpdateBudgetRequest } from '../types/UpdateBudgetRequest';
 
 export async function getItem(idToken: string): Promise<Item[]> {
   console.log('Fetching items')
@@ -83,13 +84,22 @@ export async function getBalance(idToken: string): Promise<number> {
   
 }
 
-export async function createBudget(idToken: string): Promise<void> {
+export async function createBudget(idToken: string) {
   console.log('Add new budget for new user')
-  await Axios.post(`${apiEndpoint}/budget`, null, {
+  return Axios.post(`${apiEndpoint}/budget`, null, {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${idToken}`
     },
   })
-  console.log('New budget added')
+}
+
+export async function updateBudget(idToken: string, updateRequest: UpdateBudgetRequest) {
+  console.log('Update budget')
+    return Axios.patch(`${apiEndpoint}/budget`, updateRequest, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${idToken}`
+    },
+  })
 }

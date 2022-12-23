@@ -11,7 +11,8 @@ export async function createItem(userId: string, newItemRequest: CreateItemReque
     const itemId = uuid.v4();
     const done = false;
     const createdAt = new Date().toISOString();
-    const newItem: Item = { itemId, userId, createdAt, done, ...newItemRequest };
+    const price = Math.floor(Math.random() * 1000) + 1
+    const newItem: Item = { itemId, userId, createdAt, done, ...newItemRequest, price};
     return itemAccess.createItem(newItem);
 }
 
