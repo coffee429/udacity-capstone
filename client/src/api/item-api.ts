@@ -3,6 +3,7 @@ import { Item } from '../types/Item';
 import { CreateItemRequest } from '../types/CreateItemRequest';
 import Axios from 'axios'
 import { UpdateItemRequest } from '../types/UpdateItemRequest';
+import { UpdateBudgetRequest } from '../types/UpdateBudgetRequest';
 
 export async function getItem(idToken: string): Promise<Item[]> {
   console.log('Fetching items')
@@ -13,7 +14,6 @@ export async function getItem(idToken: string): Promise<Item[]> {
       'Authorization': `Bearer ${idToken}`
     },
   })
-  console.log('Items:', response.data)
   return response.data.item
 }
 
@@ -73,39 +73,33 @@ export async function uploadFile(uploadUrl: string, file: Buffer): Promise<void>
 }
 
 export async function getBalance(idToken: string): Promise<number> {
-  console.log('Fetching balance')
-    const response = await Axios.get(`${apiEndpoint}/balance`, {
+    const response = await Axios.get(`${apiEndpoint}/budget`, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${idToken}`
       },
     })
-    console.log('Balance:', response.data.balance)
-    return response.data.balance
+    console.log('Balance:', (response.data.budget)[0].balance)
+    return (response.data.budget)[0].balance
   
 }
 
-export async function updateBalance(idToken: string): Promise<number> {
-  console.log('Creating balance')
-
-  const response = await Axios.get(`${apiEndpoint}/balance`, {
+export async function createBudget(idToken: string) {
+  console.log('Add new budget for new user')
+  return Axios.post(`${apiEndpoint}/budget`, null, {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${idToken}`
     },
   })
-  console.log('Balance:', response.data.balance)
-  return response.data.balance
 }
 
-export async function createBudget(idToken: string): Promise<void> {
-  console.log('Add new budget for new user')
-
-  await Axios.post(`${apiEndpoint}/budget`, null, {
+export async function updateBudget(idToken: string, updateRequest: UpdateBudgetRequest) {
+  console.log('Update budget')
+    return Axios.patch(`${apiEndpoint}/budget`, updateRequest, {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${idToken}`
     },
   })
-  console.log('New budget added')
 }

@@ -5,4 +5,5 @@ export interface Item {
   dueDate: string
   done: boolean
   attachmentUrl?: string
+  price: number
 }

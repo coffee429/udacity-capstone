@@ -3,11 +3,11 @@ const AWSXRay = require('aws-xray-sdk')
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 import { createLogger } from '../utils/logger'
 import { Budget } from '../models/Budget'
-import { UpdateBalanceRequest } from '../requests/UpdateBalanceRequest'
+import { UpdateBudgetRequest } from '../requests/UpdateBudgetRequest'
 
 const XAWS = AWSXRay.captureAWS(AWS)
 
-const logger = createLogger('Balance')
+const logger = createLogger('Budget')
 
 export class BudgetAccess {
     constructor(
@@ -15,8 +15,8 @@ export class BudgetAccess {
         private readonly budgetTable = process.env.BUDGET_TABLE
     ) { }
 
-    async getBalance(userId: string) {
-        logger.info(`Getting user's balance`);
+    async getBudget(userId: string) {
+        logger.info(`Getting user's budget`);
         const result = await this.docClient
             .query({
                 TableName: this.budgetTable,
@@ -26,14 +26,15 @@ export class BudgetAccess {
                 }
             })
             .promise();
-        if(result!=null) return (result.Items as Budget[])[0].balance
-        else return null      
+        console.log(result.Items)
+        return result.Items as Budget[]
     }
 
-    async updateBalance(userId: string, req: UpdateBalanceRequest) {
+    async updateBudget(userId: string, req: UpdateBudgetRequest) {
         logger.info(`Method: ${req.method}`);
-        var balance = await this.getBalance(userId);
-        logger.info(`Current balance: ${balance}`);
+        var balances = await this.getBudget(userId)
+        var balance = balances[0].balance  
+        logger.info(`Current balance: ${balance}`);  
         let amountToUpdate = req.amount;
         if(req.method==="ADD") {
             logger.info(`Add amount: ${amountToUpdate}`);
@@ -41,11 +42,10 @@ export class BudgetAccess {
             await this.docClient
             .update({
                 TableName: this.budgetTable,
-                Key: { userId, balance },
-                UpdateExpression: 'set balance = :balance, userId =:userId',
+                Key: { userId },
+                UpdateExpression: 'set balance = :balance',
                 ExpressionAttributeValues: {
                     ':balance': balance + amountToUpdate,
-                    ':userId': userId
                 },
             })
             .promise()
@@ -57,11 +57,10 @@ export class BudgetAccess {
                 await this.docClient
                 .update({
                     TableName: this.budgetTable,
-                    Key: { userId, balance },
-                    UpdateExpression: 'set balance = :balance, userId =:userId',
+                    Key: { userId },
+                    UpdateExpression: 'set balance = :balance',
                     ExpressionAttributeValues: {
                         ':balance': balance - amountToUpdate,
-                        ':userId': userId
                 },
             })
             .promise()
