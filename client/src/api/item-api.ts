@@ -73,6 +73,7 @@ export async function uploadFile(uploadUrl: string, file: Buffer): Promise<void>
 }
 
 export async function getBalance(idToken: string): Promise<number> {
+  try{
     const response = await Axios.get(`${apiEndpoint}/budget`, {
       headers: {
         'Content-Type': 'application/json',
@@ -81,7 +82,10 @@ export async function getBalance(idToken: string): Promise<number> {
     })
     console.log('Balance:', (response.data.budget)[0].balance)
     return (response.data.budget)[0].balance
-  
+  }  catch(e) {
+    alert("You dont have budget. Please create your budget first")
+  }
+  return 0
 }
 
 export async function createBudget(idToken: string) {
