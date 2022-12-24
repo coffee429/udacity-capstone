@@ -16,15 +16,14 @@ export const handler = middy(
     const updateBudgetRequest: UpdateBudgetRequest = JSON.parse(event.body)
     const userId: string = getUserId(event);
     try {
-      await updateBudget(userId, updateBudgetRequest);
+      var status = await updateBudget(userId, updateBudgetRequest);
       logger.info("Debug here")
       return {
-        statusCode: 204,
-        body: undefined
+        statusCode: 200,
+        body: JSON.stringify({status})
       };
     } catch (error) {
       logger.error(`Error: ${error.message}`);
-      throw error;
     }
   })
 

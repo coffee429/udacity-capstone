@@ -94,12 +94,13 @@ export async function createBudget(idToken: string) {
   })
 }
 
-export async function updateBudget(idToken: string, updateRequest: UpdateBudgetRequest) {
+export async function updateBudget(idToken: string, updateRequest: UpdateBudgetRequest) : Promise<Boolean> {
   console.log('Update budget')
-    return Axios.patch(`${apiEndpoint}/budget`, updateRequest, {
+    const response = await Axios.patch(`${apiEndpoint}/budget`, updateRequest, {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${idToken}`
     },
   })
+  return response.data.status
 }

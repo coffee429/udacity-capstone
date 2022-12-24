@@ -35,6 +35,7 @@ interface ItemsState {
   pay: boolean
   addNumber: number
   totalPayment: number
+  itemToPay : Item[]
 }
 
 export class Items extends React.PureComponent<ItemsProps, ItemsState> {
@@ -47,7 +48,8 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
     open:false,
     pay: false,
     addNumber: 0,
-    totalPayment: 0
+    totalPayment: 0,
+    itemToPay: []
   }
   
 
@@ -81,7 +83,6 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
   }
 
   renderModalAdd = () =>{
-    console.log(this.state.open)
     return (
       <Modal
         onClose={() => this.setState({open:false})}
@@ -121,7 +122,6 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
       <Modal
         onClose={() => this.setState({pay:false})}
         onOpen={() => {
-          this.onPaymentCalculation()
           this.setState({pay:true})
         }}
         open={this.state.pay}
@@ -188,18 +188,23 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
     }
   }
 
+
+
   onPaymentCalculation = async () => {
     try {
-      var checkItem : Item[] = this.state.items.filter((item) => {
-        item.done == true
-      })
-      
+      var checkItems : Item[] = this.state.items
+      var itemToPayList: Item[] = this.state.itemToPay
       var totalPay = 0;
-      for(var i=0; i<checkItem.length;i++) {
-        totalPay += checkItem[i].price
+      for(var i=0; i<checkItems.length;i++) {
+        if(checkItems[i].done === true) {
+          itemToPayList.push(checkItems[i])
+          totalPay += checkItems[i].price
+        }    
       }
+      this.setState({itemToPay:itemToPayList})
       this.setState({totalPayment:totalPay})
     } catch {
+      this.onPayReset()
       alert('Payment amount calculation error')
     }
   }
@@ -209,9 +214,36 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
       var amount = this.state.totalPayment;
       const method:string = "PAY"
       const req : UpdateBudgetRequest = {method, amount}
-      await updateBudget(this.props.auth.getIdToken(), req)
+      var status = await updateBudget(this.props.auth.getIdToken(), req)
+      console.log('debug');
+      
+      console.log(status);
+      console.log(this.state.itemToPay);
+      
+      
+      if(status===true) {
+        var itemToDelete : Item[] = this.state.itemToPay
+        console.log('pay item')
+        console.log(itemToDelete);
+        for(var i=0; i<itemToDelete.length; i++) {
+          this.onItemDelete(itemToDelete[i].itemId)
+          console.log('debug here');
+        }
+        this.onPayReset()
+      } else {
+        alert('Your balance in budget is not enough. Please add more to buy')
+      }
     } catch {
       alert('Your balance in budget is not enough. Please add more to buy')
+    }
+  }
+
+  onPayReset = async () => {
+    try {
+      this.setState({itemToPay:[]})
+      this.setState({totalPayment:0})
+    } catch {
+      alert('Reset failed')
     }
   }
 
@@ -249,7 +281,6 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
   }
   
   render() {
-    console.log(this.state.items)
     if(this.state.budgetCreated) {
       getBalance(this.props.auth.getIdToken()).then((data) => {
         this.setState({
@@ -323,6 +354,7 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
       <Button 
         onClick={()=>{
           this.setState({pay:true})
+          this.onPaymentCalculation()
         }}>
         Pay
       </Button>

@@ -14,6 +14,6 @@ export async function getBudget(userId: string) : Promise<Budget[]>{
     return budgetAccess.getBudget(userId)
 }
 
-export async function updateBudget(userId: string, req: UpdateBudgetRequest) :Promise<void>{
+export async function updateBudget(userId: string, req: UpdateBudgetRequest) :Promise<Boolean>{
     return budgetAccess.updateBudget(userId, req)
 }

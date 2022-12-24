@@ -31,6 +31,7 @@ export class BudgetAccess {
     }
 
     async updateBudget(userId: string, req: UpdateBudgetRequest) {
+        var status : boolean = false
         logger.info(`Method: ${req.method}`);
         var balances = await this.getBudget(userId)
         var balance = balances[0].balance  
@@ -49,6 +50,7 @@ export class BudgetAccess {
                 },
             })
             .promise()
+            status = true
         }
         else if(req.method==="PAY") {
             logger.info(`Pay amount: ${amountToUpdate}`)
@@ -64,9 +66,13 @@ export class BudgetAccess {
                 },
             })
             .promise()
+            status = true
+            }else {
+                logger.info(`Current balance is not enought to pay`);
+                status = false
             }
-            else logger.info(`Current balance is not enought to pay`);
         }
+        return status
     }
 
     async createBudget(newBudget: Budget): Promise<Budget> {
