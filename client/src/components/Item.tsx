@@ -105,8 +105,7 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
             icon='checkmark'
             onClick={() => {
               // Update balance
-              var newBalance = this.state.balance + this.state.addNumber
-              this.setState({balance:newBalance})
+              this.setState({balance:this.state.balance + this.state.addNumber})
               this.setState({open:false})
               this.onAddBalance(this.state.addNumber)
             }}
@@ -118,11 +117,13 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
   }
 
   renderModalPay = () =>{
-    console.log(this.state.pay)
     return (
       <Modal
         onClose={() => this.setState({pay:false})}
-        onOpen={() => this.setState({pay:true})}
+        onOpen={() => {
+          this.onPaymentCalculation()
+          this.setState({pay:true})
+        }}
         open={this.state.pay}
       >
         <Modal.Header>Are you sure to buy these item?</Modal.Header>
@@ -136,11 +137,9 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
             labelPosition='right'
             icon='checkmark'
             onClick={() => {
-              // Update balance
-              var newBalance = this.state.balance + this.state.addNumber
-              this.setState({balance:newBalance})
+              // Pay
               this.setState({pay:false})
-              this.onAddBalance(this.state.addNumber)
+              this.onPayment()
             }}
           
             positive
@@ -189,6 +188,33 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
     }
   }
 
+  onPaymentCalculation = async () => {
+    try {
+      var checkItem : Item[] = this.state.items.filter((item) => {
+        item.done == true
+      })
+      
+      var totalPay = 0;
+      for(var i=0; i<checkItem.length;i++) {
+        totalPay += checkItem[i].price
+      }
+      this.setState({totalPayment:totalPay})
+    } catch {
+      alert('Payment amount calculation error')
+    }
+  }
+
+  onPayment = async () => {
+    try {
+      var amount = this.state.totalPayment;
+      const method:string = "PAY"
+      const req : UpdateBudgetRequest = {method, amount}
+      await updateBudget(this.props.auth.getIdToken(), req)
+    } catch {
+      alert('Your balance in budget is not enough. Please add more to buy')
+    }
+  }
+
   async componentDidMount() {
     try {
       const items = await getItem(this.props.auth.getIdToken())
@@ -208,7 +234,7 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
         budgetCreated: true
       })
     } catch {
-      alert('Budget creation failed')
+      alert('Your budget is already existed')
     }
   }
 
